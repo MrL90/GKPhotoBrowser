@@ -23,6 +23,8 @@
 
 @property (nonatomic, strong) UILabel       *failureLabel;
 @property (nonatomic, strong) UIImageView   *failureImgView;
+@property (nonatomic, strong) UIStackView   *failureStackView;
+@property (nonatomic, strong) UIView        *maskView;
 
 @property (nonatomic, assign) BOOL isLoading;
 
@@ -64,28 +66,29 @@
         self.centerButton.layer.cornerRadius  = btnWH * 0.5;
         self.centerButton.layer.masksToBounds = YES;
     }
-    
+    self.maskView.frame = self.bounds;
     if (self.failStyle == GKPhotoBrowserFailStyleOnlyText) {
-        self.failureLabel.center = CGPointMake(self.bounds.size.width * 0.5, self.bounds.size.height * 0.5);
+        self.failureStackView.center = CGPointMake(self.bounds.size.width * 0.5, self.bounds.size.height * 0.5);
     }else if (self.failStyle == GKPhotoBrowserFailStyleOnlyImage) {
-        self.failureImgView.center = CGPointMake(self.bounds.size.width * 0.5, self.bounds.size.height * 0.5);
+        self.failureStackView.center = CGPointMake(self.bounds.size.width * 0.5, self.bounds.size.height * 0.5);
     }else if (self.failStyle == GKPhotoBrowserFailStyleImageAndText) {
-        CGRect imgF     = self.failureImgView.frame;
-        CGRect textF    = self.failureLabel.frame;
-        
-        imgF.origin.y = (self.bounds.size.height - imgF.size.height - 10 - textF.size.height) / 2;
-        self.failureImgView.frame = imgF;
-        
-        textF.origin.y = imgF.origin.y + imgF.size.height + 10;
-        self.failureLabel.frame = textF;
-        
-        CGPoint center = self.failureImgView.center;
-        center.x = self.bounds.size.width * 0.5;
-        self.failureImgView.center = center;
-        
-        center = self.failureLabel.center;
-        center.x = self.bounds.size.width * 0.5;
-        self.failureLabel.center = center;
+        self.failureStackView.center = CGPointMake(self.bounds.size.width * 0.5, self.bounds.size.height * 0.5);
+//        CGRect imgF     = self.failureImgView.frame;
+//        CGRect textF    = self.failureLabel.frame;
+//
+//        imgF.origin.y = (self.bounds.size.height - imgF.size.height - 10 - textF.size.height) / 2;
+//        self.failureImgView.frame = imgF;
+//
+//        textF.origin.y = imgF.origin.y + imgF.size.height + 10;
+//        self.failureLabel.frame = textF;
+//
+//        CGPoint center = self.failureImgView.center;
+//        center.x = self.bounds.size.width * 0.5;
+//        self.failureImgView.center = center;
+//
+//        center = self.failureLabel.center;
+//        center.x = self.bounds.size.width * 0.5;
+//        self.failureLabel.center = center;
     }
     
     [self layoutAnimatedLayer];
@@ -199,13 +202,13 @@
 - (UILabel *)failureLabel {
     if (!_failureLabel) {
         _failureLabel           = [UILabel new];
-        _failureLabel.font      = [UIFont systemFontOfSize:16.0f];
+        _failureLabel.font      = [UIFont systemFontOfSize:13.0f];
         _failureLabel.textColor = [UIColor whiteColor];
         _failureLabel.text      = self.failText ? self.failText : @"图片加载失败";
         _failureLabel.textAlignment = NSTextAlignmentCenter;
         [_failureLabel sizeToFit];
         
-        _failureLabel.center = CGPointMake(self.bounds.size.width * 0.5, self.bounds.size.height * 0.5);
+//        _failureLabel.center = CGPointMake(self.bounds.size.width * 0.5, self.bounds.size.height * 0.5);
     }
     return _failureLabel;
 }
@@ -215,12 +218,51 @@
         _failureImgView = [UIImageView new];
         _failureImgView.image = self.failImage ? self.failImage : GKPhotoBrowserImage(@"loading_error");
         [_failureImgView sizeToFit];
+        _failureImgView.contentMode = UIViewContentModeScaleAspectFill;
         
-        _failureImgView.center = CGPointMake(self.bounds.size.width * 0.5, self.bounds.size.height * 0.5);
+//        _failureImgView.center = CGPointMake(self.bounds.size.width * 0.5, self.bounds.size.height * 0.5);
     }
     return _failureImgView;
 }
 
+- (UIStackView *)failureStackView {
+    if (!_failureStackView) {
+        // 初始化 StackView
+        _failureStackView = [[UIStackView alloc] initWithArrangedSubviews:@[self.failureImgView, self.failureLabel]];
+        _failureStackView.axis = UILayoutConstraintAxisVertical;
+        _failureStackView.spacing = 10;
+        _failureStackView.alignment = UIStackViewAlignmentCenter;
+        _failureStackView.distribution = UIStackViewDistributionFill;
+
+        // 设置 failureImgView 的尺寸为 50x50
+        self.failureImgView.translatesAutoresizingMaskIntoConstraints = NO;
+        [NSLayoutConstraint activateConstraints:@[
+            [self.failureImgView.widthAnchor constraintEqualToConstant:50],
+            [self.failureImgView.heightAnchor constraintEqualToConstant:50]
+        ]];
+
+        // 设置 failureLabel 的宽度为 100，高度自适应
+        self.failureLabel.numberOfLines = 0;
+        self.failureLabel.lineBreakMode = NSLineBreakByWordWrapping;
+        self.failureLabel.translatesAutoresizingMaskIntoConstraints = NO;
+        [NSLayoutConstraint activateConstraints:@[
+            [self.failureLabel.widthAnchor constraintEqualToConstant:200],
+            [self.failureLabel.heightAnchor constraintGreaterThanOrEqualToConstant:0]
+        ]];
+
+        // 将 failureStackView 添加到父视图
+      
+    }
+    return _failureStackView;
+}
+
+- (UIView *)maskView {
+    if (!_maskView) {
+        _maskView = [[UIView alloc] init];
+        _maskView.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.5];
+    }
+    return _maskView;
+}
 - (void)setupIndeterminateAnim:(CAShapeLayer *)layer {
     CGPoint arcCenter = [self layerCenter];
     
@@ -374,6 +416,12 @@
     [self.failureImgView removeFromSuperview];
     self.failureImgView = nil;
     
+    [self.failureStackView removeFromSuperview];
+    self.failureStackView = nil;
+    
+    [self.maskView removeFromSuperview];
+    self.maskView = nil;
+    
     [self.layer addSublayer:self.backgroundLayer];
     [self.layer addSublayer:self.animatedLayer];
     [self layoutAnimatedLayer];
@@ -438,23 +486,38 @@
     self.backgroundLayer = nil;
     
     [self.layer removeAllAnimations];
-    
+    [self addSubview:self.maskView];
+    [self addSubview:_failureStackView];
+    _failureStackView.translatesAutoresizingMaskIntoConstraints = NO;
+
+    // 设置 failureStackView 居中约束
+    [NSLayoutConstraint activateConstraints:@[
+        [_failureStackView.centerXAnchor constraintEqualToAnchor:self.centerXAnchor],
+        [_failureStackView.centerYAnchor constraintEqualToAnchor:self.centerYAnchor]
+    ]];
     if (self.failStyle == GKPhotoBrowserFailStyleOnlyText) {
-        [self addSubview:self.failureLabel];
+        [self addSubview:self.failureStackView];
+        self.failureLabel.hidden = NO;
+        self.failureImgView.hidden = YES;
     }else if (self.failStyle == GKPhotoBrowserFailStyleOnlyImage) {
-        [self addSubview:self.failureImgView];
+        self.failureLabel.hidden = YES;
+        self.failureImgView.hidden = NO;
     }else if (self.failStyle == GKPhotoBrowserFailStyleImageAndText) {
-        [self addSubview:self.failureLabel];
-        [self addSubview:self.failureImgView];
-    
-        CGRect imgF     = self.failureImgView.frame;
-        CGRect textF    = self.failureLabel.frame;
-        
-        imgF.origin.y = (self.bounds.size.height - imgF.size.height - 10 - textF.size.height) / 2;
-        self.failureImgView.frame = imgF;
-        
-        textF.origin.y = imgF.origin.y + imgF.size.height + 10;
-        self.failureLabel.frame = textF;
+        self.failureLabel.hidden = NO;
+        self.failureImgView.hidden = NO;
+//        self.failureStackView.center = CGPointMake(self.bounds.size.width * 0.5, self.bounds.size.height * 0.5);
+      
+//        [self addSubview:self.failureLabel];
+//        [self addSubview:self.failureImgView];
+//
+//        CGRect imgF     = self.failureImgView.frame;
+//        CGRect textF    = self.failureLabel.frame;
+//
+//        imgF.origin.y = (self.bounds.size.height - imgF.size.height - 10 - textF.size.height) / 2;
+//        self.failureImgView.frame = imgF;
+//
+//        textF.origin.y = imgF.origin.y + imgF.size.height + 10;
+//        self.failureLabel.frame = textF;
     }
 }
 
@@ -467,9 +530,9 @@
     self.backgroundLayer = nil;
     
     [self.layer removeAllAnimations];
-    
-    [self.failureLabel removeFromSuperview];
-    [self.failureImgView removeFromSuperview];
+    [self.failureStackView removeFromSuperview];
+//    [self.failureLabel removeFromSuperview];
+//    [self.failureImgView removeFromSuperview];
 }
 
 - (void)hideLoadingView {
