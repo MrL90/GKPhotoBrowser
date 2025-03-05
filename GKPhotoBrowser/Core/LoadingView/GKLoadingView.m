@@ -487,7 +487,7 @@
     
     [self.layer removeAllAnimations];
     [self addSubview:self.maskView];
-    [self addSubview:_failureStackView];
+    [self addSubview:self.failureStackView];
     _failureStackView.translatesAutoresizingMaskIntoConstraints = NO;
 
     // 设置 failureStackView 居中约束
@@ -496,7 +496,6 @@
         [_failureStackView.centerYAnchor constraintEqualToAnchor:self.centerYAnchor]
     ]];
     if (self.failStyle == GKPhotoBrowserFailStyleOnlyText) {
-        [self addSubview:self.failureStackView];
         self.failureLabel.hidden = NO;
         self.failureImgView.hidden = YES;
     }else if (self.failStyle == GKPhotoBrowserFailStyleOnlyImage) {
