@@ -702,6 +702,8 @@
         }
         photoView.videoLoadingView.failText = failText;
         photoView.videoLoadingView.failImage = failImage;
+         photoView.videoLoadingView.hidden = NO;
+        photoView.loadingView.hidden = YES;
     }else {
         NSString *failText = self.configure.failureText ?: @"图片加载失败";
         if ([self.delegate respondsToSelector:@selector(photoBrowser:failedTextAtIndex:)]) {
@@ -713,6 +715,8 @@
         }
         photoView.loadingView.failText = failText;
         photoView.loadingView.failImage = failImage;
+        photoView.videoLoadingView.hidden = YES;
+        photoView.loadingView.hidden = NO;
     }
 }
 
